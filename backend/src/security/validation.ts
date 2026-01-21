@@ -31,6 +31,10 @@ export const scopeSchema = z.enum(['same-domain', 'same-host', 'subdomains', 'cu
 
 /**
  * File type filter options.
+ * NOTE: 'other' defaults to TRUE because:
+ * - CSS files from CDNs like Google Fonts often have no extension (e.g., /css2?family=Inter)
+ * - JS files from CDNs may not have .js extension
+ * - Essential resources should not be blocked due to missing extension
  */
 export const fileTypesSchema = z.object({
     html: z.boolean().default(true),
@@ -40,7 +44,7 @@ export const fileTypesSchema = z.object({
     fonts: z.boolean().default(true),
     media: z.boolean().default(true),
     documents: z.boolean().default(true),
-    other: z.boolean().default(false),
+    other: z.boolean().default(true),  // IMPORTANT: Must be true to download CDN resources without extensions
 });
 
 /**

@@ -293,16 +293,14 @@ export class CrawlEngine extends EventEmitter {
             const normalized = normalizeUrl(link.url);
             if (!normalized) continue;
 
-            // Determine if this is an asset or a page
-            const ext = getExtensionFromUrl(link.url);
-            const category = getMimeCategory(ext);
-            const isAsset = category !== 'html' && link.type === 'asset';
-
-            if (isAsset) {
-                // Use addAsset for assets - this allows CDN-hosted images
+            // Trust the parser's classification: if it says it's an asset, treat it as one
+            // The parser correctly identifies stylesheets, scripts, images, etc. as assets
+            // Only <a href> links are classified as 'page'
+            if (link.type === 'asset') {
+                // Use addAsset for all assets - no scope restrictions
                 this.queue.addAsset(link.url, result.finalUrl, depth);
             } else {
-                // Add pages with depth increment
+                // Add navigational links as pages with depth increment
                 this.queue.add(link.url, result.finalUrl, depth + 1);
             }
         }
