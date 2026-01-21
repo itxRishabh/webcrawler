@@ -132,7 +132,9 @@ export class UrlQueue {
 
     /**
      * Add an asset URL to the queue, with relaxed scope restrictions.
-     * This allows downloading assets from external CDNs that are commonly used to host images.
+     * Assets (CSS, JS, images, fonts) are ALWAYS downloaded if they are referenced
+     * from an in-scope page, regardless of where they are hosted.
+     * This ensures complete offline browsing experience.
      */
     addAsset(url: string, parentUrl: string, depth: number): boolean {
         // Normalize URL
@@ -142,8 +144,9 @@ export class UrlQueue {
         // Check if already in queue
         if (this.queue.has(normalized)) return false;
 
-        // Check depth limit (relaxed for assets - allow 2 more levels, skip if unlimited mode)
-        if (!this.options.unlimitedMode && depth > this.options.maxDepth + 2) return false;
+        // Check depth limit (very relaxed for assets - allow 5 more levels, skip if unlimited mode)
+        // This ensures we can follow CSS @import chains and nested resources
+        if (!this.options.unlimitedMode && depth > this.options.maxDepth + 5) return false;
 
         // Check max pages limit (skip if unlimited mode)
         if (!this.options.unlimitedMode && this.queue.size >= this.options.maxPages) return false;
@@ -160,19 +163,15 @@ export class UrlQueue {
             }
         }
 
-        // For assets, we check if it's either in scope OR from a common CDN/asset domain
-        const scope = this.options.scope === 'custom' ? 'same-domain' : this.options.scope;
-        const inScope = isInScope(normalized, this.seedUrl, scope);
-
-        if (!inScope) {
-            // Check if this is a common CDN or asset hosting domain
-            const isAssetHost = this.isAssetHostDomain(normalized);
-            if (!isAssetHost) {
-                return false;
-            }
-        }
-
-        // Asset URLs bypass include/exclude path restrictions since they're typically on different paths
+        // IMPORTANT: Assets referenced from in-scope pages are ALWAYS downloaded.
+        // This is critical because:
+        // 1. CSS files may be hosted on CDNs but are required for page styling
+        // 2. JS files may be hosted externally but are needed for functionality
+        // 3. Images/fonts may be on CDNs like Cloudflare, Google Fonts, etc.
+        // 
+        // We DO NOT apply scope restrictions to assets - they are downloaded
+        // unconditionally as long as they are referenced from a page we crawled.
+        // This ensures complete offline browsing capability.
 
         // Add to queue
         const item: QueuedUrl = {
