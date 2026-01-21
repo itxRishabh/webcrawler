@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+
+# Job data (development)
+jobs/
+temp/
+*.zip
+
+# TypeScript
+*.tsbuildinfo
+
+# Deployment specific
+cpanel-deployment-guide.md
+webcopier-deploy/
+
+# Backend build outputs
+backend/public/
